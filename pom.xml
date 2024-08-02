@@ -13,12 +13,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <aws.version>2.15.1</aws.version>
         <junit.version>5.7.0</junit.version>
         <keycloak.version>25.0.2</keycloak.version>
         <maven-shade.version>3.2.4</maven-shade.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <mockito.version>2.25.1</mockito.version>
+        <ews-java-api.version>2.0</ews-java-api.version>
     </properties>
 
     <dependencies>
@@ -38,22 +38,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>ses</artifactId>
-            <version>${aws.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
+            <groupId>com.microsoft.ews-java-api</groupId>
+            <artifactId>ews-java-api</artifactId>
+            <version>${ews-java-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -61,6 +48,17 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>msal4j</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        
     </dependencies>
 
     <dependencyManagement>

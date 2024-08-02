@@ -1,1 +1,1 @@
-bappity.keycloak.provider.email.aws.OutlookEwsEmailSenderProviderFactory
+bappity.keycloak.provider.email.ews.OutlookEwsEmailSenderProviderFactory

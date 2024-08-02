@@ -1,50 +1,43 @@
-package bappity.keycloak.provider.email.aws;
+package bappity.keycloak.provider.email.ews;
 
+import com.microsoft.aad.msal4j.*;
 import org.keycloak.Config;
 import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.email.EmailSenderProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ServerInfoAwareProviderFactory;
-import microsoft.exchange.webservices.data.core.ExchangeService;
-import microsoft.exchange.webservices.data.core.enumeration.misc.ExchangeVersion;
-import microsoft.exchange.webservices.data.credential.ExchangeCredentials;
-import microsoft.exchange.webservices.data.credential.WebCredentials;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- * Modified by @bappity for Outlook EWS
- */
 public class OutlookEwsEmailSenderProviderFactory implements EmailSenderProviderFactory, ServerInfoAwareProviderFactory {
     private final Map<String, String> configMap = new HashMap<>();
-    private ExchangeService exchangeService;
+    private String ewsUrl;
+    private String accessToken;
 
     @Override
     public EmailSenderProvider create(KeycloakSession session) {
-        return new OutlookEwsEmailSenderProvider(exchangeService);
+        return new OutlookEwsEmailSenderProvider(ewsUrl, accessToken);
     }
 
     @Override
     public void init(Config.Scope config) {
-        String email = config.get("email");
-        String password = config.get("password");
-        String url = config.get("ewsUrl");
+        String clientId = config.get("clientId");
+        String clientSecret = config.get("clientSecret");
+        String tenantId = config.get("tenantId");
+        ewsUrl = config.get("ewsUrl");
 
-        if (email != null && password != null && url != null) {
-            configMap.put("email", email);
-            configMap.put("ewsUrl", url);
+        if (clientId != null && clientSecret != null && tenantId != null && ewsUrl != null) {
+            configMap.put("ewsUrl", ewsUrl);
 
             try {
-                exchangeService = new ExchangeService(ExchangeVersion.Exchange2010_SP2);
-                ExchangeCredentials credentials = new WebCredentials(email, password);
-                exchangeService.setCredentials(credentials);
-                exchangeService.setUrl(new URI(url));
+                accessToken = getOAuthAccessToken(tenantId, clientId, clientSecret);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to initialize Exchange service", e);
+                throw new RuntimeException("Failed to initialize OAuth token", e);
             }
         } else {
             throw new RuntimeException("Missing configuration for Office365 EWS");
@@ -67,5 +60,20 @@ public class OutlookEwsEmailSenderProviderFactory implements EmailSenderProvider
     @Override
     public Map<String, String> getOperationalInfo() {
         return configMap;
+    }
+
+    private static String getOAuthAccessToken(String tenantId, String clientId, String clientSecret) throws Exception {
+        ConfidentialClientApplication app = ConfidentialClientApplication.builder(
+                clientId,
+                ClientCredentialFactory.createFromSecret(clientSecret))
+                .authority("https://login.microsoftonline.com/" + tenantId)
+                .build();
+
+        ClientCredentialParameters parameters = ClientCredentialParameters.builder(
+                Set.of("https://outlook.office365.com/.default"))
+                .build();
+
+        CompletableFuture<IAuthenticationResult> future = app.acquireToken(parameters);
+        return future.get().accessToken();
     }
 }

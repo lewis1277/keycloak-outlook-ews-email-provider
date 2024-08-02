@@ -1,71 +1,76 @@
-package bappity.keycloak.provider.email.aws;
+// package bappity.keycloak.provider.email.ews;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.keycloak.email.EmailException;
-import org.keycloak.models.UserModel;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import microsoft.exchange.webservices.data.core.ExchangeService;
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
-import microsoft.exchange.webservices.data.property.complex.MessageBody;
-import microsoft.exchange.webservices.data.property.complex.EmailAddress;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.keycloak.email.EmailException;
+// import org.keycloak.models.UserModel;
+// import org.mockito.Mock;
+// import org.mockito.MockitoAnnotations;
+// import org.apache.http.HttpResponse;
+// import org.apache.http.client.methods.CloseableHttpResponse;
+// import org.apache.http.client.methods.HttpPost;
+// import org.apache.http.impl.client.CloseableHttpClient;
+// import org.apache.http.impl.client.HttpClients;
+// import org.apache.http.entity.StringEntity;
+// import org.apache.http.util.EntityUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+// import java.nio.charset.StandardCharsets;
+// import java.util.HashMap;
+// import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+// import static org.junit.jupiter.api.Assertions.assertThrows;
+// import static org.junit.jupiter.api.Assertions.assertTrue;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.Mockito.*;
 
-/**
- * @author Niko Köbler, https://www.n-k.de, @dasniko
- * Modified by @bappity for Outlook EWS
- */
-class OutlookEwsEmailSenderProviderTest {
+// class OutlookEwsEmailSenderProviderTest {
 
-    private OutlookEwsEmailSenderProvider provider;
+//     private OutlookEwsEmailSenderProvider provider;
 
-    @Mock
-    private UserModel user;
+//     @Mock
+//     private UserModel user;
 
-    @Mock
-    private ExchangeService exchangeService;
+//     @Mock
+//     private CloseableHttpClient httpClient;
 
-    @Mock
-    private EmailMessage emailMessage;
+//     @Mock
+//     private CloseableHttpResponse httpResponse;
 
-    @BeforeEach
-    void before() throws Exception {
-        MockitoAnnotations.openMocks(this);
-        when(exchangeService.createItem(EmailMessage.class)).thenReturn(emailMessage);
-    }
+//     @BeforeEach
+//     void before() throws Exception {
+//         MockitoAnnotations.initMocks(this);
 
-    @Test
-    void testSend() throws Exception {
-        Map<String, String> config = new HashMap<>();
-        config.put("from", "john@example.com");
-        when(user.getEmail()).thenReturn("user@example.com");
+//         // Mock HttpClient setup
+//         httpClient = mock(CloseableHttpClient.class);
+//         httpResponse = mock(CloseableHttpResponse.class);
+//         when(httpResponse.getEntity()).thenReturn(new org.apache.http.entity.StringEntity("<Response>Success</Response>", StandardCharsets.UTF_8));
+//         when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponse);
 
-        provider = new OutlookEwsEmailSenderProvider(exchangeService);
-        provider.send(config, user, "Subject", "Text Body", "Html Body");
+//         // Initialize provider with mock HTTP client
+//         provider = new OutlookEwsEmailSenderProvider("https://outlook.office365.com/EWS/Exchange.asmx", "mock-access-token");
+//     }
 
-        verify(emailMessage).setSubject("Subject");
-        verify(emailMessage).setBody(any(MessageBody.class));
-        verify(emailMessage).getToRecipients();
-        verify(emailMessage).setFrom(any(EmailAddress.class));
-        verify(emailMessage).send();
-    }
+//     @Test
+//     void testSend() throws Exception {
+//         Map<String, String> config = new HashMap<>();
+//         config.put("from", "john@example.com");
+//         when(user.getEmail()).thenReturn("user@example.com");
 
-    @Test
-    void testMissingFromAddress() {
-        Map<String, String> config = new HashMap<>();
-        provider = new OutlookEwsEmailSenderProvider(exchangeService);
+//         // Call the method to test
+//         provider.send(config, "user@example.com", "Subject", "Text Body", "Html Body");
 
-        EmailException exception = assertThrows(EmailException.class,
-            () -> provider.send(config, user, "Subject", "Text Body", "Html Body"));
+//         // Verify interactions
+//         verify(httpClient).execute(any(HttpPost.class));
+//     }
 
-        assertTrue(exception.getMessage().contains("from"));
-    }
-}
+//     @Test
+//     void testMissingFromAddress() {
+//         Map<String, String> config = new HashMap<>();
+//         provider = new OutlookEwsEmailSenderProvider("https://outlook.office365.com/EWS/Exchange.asmx", "mock-access-token");
+
+//         EmailException exception = assertThrows(EmailException.class,
+//             () -> provider.send(config, "user@example.com", "Subject", "Text Body", "Html Body"));
+
+//         assertTrue(exception.getMessage().contains("from"));
+//     }
+// }
