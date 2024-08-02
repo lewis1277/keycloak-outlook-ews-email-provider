@@ -5,3 +5,4 @@ target
 copy.sh
 dependency-reduced-pom.xml
 .vs/
+settings.json
