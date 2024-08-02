@@ -6,8 +6,10 @@ import org.keycloak.email.EmailException;
 import org.keycloak.models.UserModel;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import software.amazon.awssdk.services.ses.SesClient;
-import software.amazon.awssdk.services.ses.model.SendEmailRequest;
+import microsoft.exchange.webservices.data.core.ExchangeService;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
+import microsoft.exchange.webservices.data.property.complex.MessageBody;
+import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +17,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
@@ -28,33 +29,41 @@ class OutlookEwsEmailSenderProviderTest {
 
     @Mock
     private UserModel user;
+
     @Mock
-    private SesClient ses;
+    private ExchangeService exchangeService;
+
+    @Mock
+    private EmailMessage emailMessage;
 
     @BeforeEach
-    void before() {
-        MockitoAnnotations.initMocks(this);
+    void before() throws Exception {
+        MockitoAnnotations.openMocks(this);
+        when(exchangeService.createItem(EmailMessage.class)).thenReturn(emailMessage);
     }
 
     @Test
-    void testSend() throws EmailException {
+    void testSend() throws Exception {
         Map<String, String> config = new HashMap<>();
         config.put("from", "john@example.com");
-
         when(user.getEmail()).thenReturn("user@example.com");
 
-        provider = new OutlookEwsEmailSenderProvider(ses);
+        provider = new OutlookEwsEmailSenderProvider(exchangeService);
         provider.send(config, user, "Subject", "Text Body", "Html Body");
 
-        verify(ses).sendEmail(any(SendEmailRequest.class));
+        verify(emailMessage).setSubject("Subject");
+        verify(emailMessage).setBody(any(MessageBody.class));
+        verify(emailMessage).getToRecipients();
+        verify(emailMessage).setFrom(any(EmailAddress.class));
+        verify(emailMessage).send();
     }
 
     @Test
     void testMissingFromAddress() {
         Map<String, String> config = new HashMap<>();
-        provider = new OutlookEwsEmailSenderProvider(ses);
+        provider = new OutlookEwsEmailSenderProvider(exchangeService);
 
-        Throwable exception = assertThrows(EmailException.class,
+        EmailException exception = assertThrows(EmailException.class,
             () -> provider.send(config, user, "Subject", "Text Body", "Html Body"));
 
         assertTrue(exception.getMessage().contains("from"));
