@@ -1,4 +1,4 @@
-package dasniko.keycloak.provider.email.aws;
+package bappity.keycloak.provider.email.aws;
 
 import org.keycloak.Config;
 import org.keycloak.email.EmailSenderProvider;
@@ -14,15 +14,16 @@ import java.util.Map;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
+ * Modified by @bappity for Outlook EWS
  */
-public class AwsSesEmailSenderProviderFactory implements EmailSenderProviderFactory, ServerInfoAwareProviderFactory {
+public class OutlookEwsEmailSenderProviderFactory implements EmailSenderProviderFactory, ServerInfoAwareProviderFactory {
 
     private final Map<String, String> configMap = new HashMap<>();
     private SesClient ses;
 
     @Override
     public EmailSenderProvider create(KeycloakSession session) {
-        return new AwsSesEmailSenderProvider(ses);
+        return new OutlookEwsEmailSenderProvider(ses);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class AwsSesEmailSenderProviderFactory implements EmailSenderProviderFact
 
     @Override
     public String getId() {
-        return "aws-ses";
+        return "outlook-ews";
     }
 
     @Override

@@ -1,4 +1,4 @@
-package dasniko.keycloak.provider.email.aws;
+package bappity.keycloak.provider.email.aws;
 
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
@@ -18,12 +18,13 @@ import java.util.Map;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
+ * Modified by @bappity for Outlook EWS
  */
-public class AwsSesEmailSenderProvider implements EmailSenderProvider {
+public class OutlookEwsEmailSenderProvider implements EmailSenderProvider {
 
     private final SesClient ses;
 
-    AwsSesEmailSenderProvider(SesClient ses) {
+    OutlookEwsEmailSenderProvider(SesClient ses) {
         this.ses = ses;
     }
 

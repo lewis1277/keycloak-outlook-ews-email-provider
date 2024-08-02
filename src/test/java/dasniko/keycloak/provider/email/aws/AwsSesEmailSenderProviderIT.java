@@ -1,4 +1,4 @@
-package dasniko.keycloak.provider.email.aws;
+package bappity.keycloak.provider.email.aws;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,9 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
+ * Modified by @bappity for Outlook EWS
  */
-class AwsSesEmailSenderProviderIT {
+class OutlookEwsEmailSenderProviderIT {
 
     @Test
     @Disabled("Run only manually")
@@ -30,7 +31,7 @@ class AwsSesEmailSenderProviderIT {
         UserModel user = mock(UserModel.class);
         when(user.getEmail()).thenReturn("john@example.com");
 
-        AwsSesEmailSenderProvider provider = new AwsSesEmailSenderProvider(ses);
+        OutlookEwsEmailSenderProvider provider = new OutlookEwsEmailSenderProvider(ses);
         provider.send(config, user, "Test", "Hello", "<h1>Hello</h1>");
     }
 }

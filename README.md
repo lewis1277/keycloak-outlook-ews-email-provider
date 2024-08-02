@@ -32,8 +32,8 @@ To configure the email provider SPI, include a snippet like this in your `standa
 <subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">
   ...
   <spi name="emailSender">
-    <default-provider>aws-ses</default-provider>
-    <provider name="aws-ses" enabled="true">
+    <default-provider>outlook-ews</default-provider>
+    <provider name="outlook-ews" enabled="true">
       <!-- Optional, if you want (or need) to set another region for SES as the environment default region: -->
       <properties>
         <property name="region" value="eu-west-1"/>
@@ -50,10 +50,10 @@ Alternatively, you can use this `jboss-cli` script snippet to configure your Key
 if (outcome == success) of /subsystem=keycloak-server/spi=emailSender:read-resource
   /subsystem=keycloak-server/spi=emailSender/:remove()
 end-if
-/subsystem=keycloak-server/spi=emailSender/:add(default-provider=aws-ses)
-/subsystem=keycloak-server/spi=emailSender/provider=aws-ses/:add(enabled=true)
+/subsystem=keycloak-server/spi=emailSender/:add(default-provider=outlook-ews)
+/subsystem=keycloak-server/spi=emailSender/provider=outlook-ews/:add(enabled=true)
 # Optional, if you want (or need) to set another region for SES as the environment default region:
-# /subsystem=keycloak-server/spi=emailSender/provider=aws-ses/:write-attribute(name=properties,value={"region" => "eu-west-1"})
+# /subsystem=keycloak-server/spi=emailSender/provider=outlook-ews/:write-attribute(name=properties,value={"region" => "eu-west-1"})
 ```
 
 As the Email Provider SPI is not selectable/configurable on a per-realm base, you can't set the AWS SES provider for one realm and leave the default SMTP provider in another.

@@ -1,4 +1,4 @@
-package dasniko.keycloak.provider.email.aws;
+package bappity.keycloak.provider.email.aws;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +20,11 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
+ * Modified by @bappity for Outlook EWS
  */
-class AwsSesEmailSenderProviderTest {
+class OutlookEwsEmailSenderProviderTest {
 
-    private AwsSesEmailSenderProvider provider;
+    private OutlookEwsEmailSenderProvider provider;
 
     @Mock
     private UserModel user;
@@ -42,7 +43,7 @@ class AwsSesEmailSenderProviderTest {
 
         when(user.getEmail()).thenReturn("user@example.com");
 
-        provider = new AwsSesEmailSenderProvider(ses);
+        provider = new OutlookEwsEmailSenderProvider(ses);
         provider.send(config, user, "Subject", "Text Body", "Html Body");
 
         verify(ses).sendEmail(any(SendEmailRequest.class));
@@ -51,7 +52,7 @@ class AwsSesEmailSenderProviderTest {
     @Test
     void testMissingFromAddress() {
         Map<String, String> config = new HashMap<>();
-        provider = new AwsSesEmailSenderProvider(ses);
+        provider = new OutlookEwsEmailSenderProvider(ses);
 
         Throwable exception = assertThrows(EmailException.class,
             () -> provider.send(config, user, "Subject", "Text Body", "Html Body"));

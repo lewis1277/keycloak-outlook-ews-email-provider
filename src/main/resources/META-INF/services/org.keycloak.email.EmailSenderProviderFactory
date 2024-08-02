@@ -1,1 +1,1 @@
-dasniko.keycloak.provider.email.aws.AwsSesEmailSenderProviderFactory
+bappity.keycloak.provider.email.aws.OutlookEwsEmailSenderProviderFactory

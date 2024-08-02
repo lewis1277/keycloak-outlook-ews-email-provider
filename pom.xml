@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dasniko</groupId>
-    <artifactId>keycloak-aws-ses-email-provider</artifactId>
+    <groupId>bappity</groupId>
+    <artifactId>keycloak-outlook-ews-email-provider</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -15,7 +15,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <aws.version>2.15.1</aws.version>
         <junit.version>5.7.0</junit.version>
-        <keycloak.version>12.0.1</keycloak.version>
+        <keycloak.version>25.0.2</keycloak.version>
         <maven-shade.version>3.2.4</maven-shade.version>
         <maven-surefire.version>2.22.2</maven-surefire.version>
         <mockito.version>2.25.1</mockito.version>
