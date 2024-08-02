@@ -4,16 +4,13 @@ import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
 import org.keycloak.models.UserModel;
 import org.keycloak.services.ServicesLogger;
-import software.amazon.awssdk.services.ses.SesClient;
-import software.amazon.awssdk.services.ses.model.Body;
-import software.amazon.awssdk.services.ses.model.Content;
-import software.amazon.awssdk.services.ses.model.Destination;
-import software.amazon.awssdk.services.ses.model.Message;
-import software.amazon.awssdk.services.ses.model.SendEmailRequest;
+import microsoft.exchange.webservices.data.core.ExchangeService;
+import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
+import microsoft.exchange.webservices.data.property.complex.MessageBody;
+import microsoft.exchange.webservices.data.property.complex.EmailAddress;
 
 import javax.mail.internet.InternetAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -21,16 +18,14 @@ import java.util.Map;
  * Modified by @bappity for Outlook EWS
  */
 public class OutlookEwsEmailSenderProvider implements EmailSenderProvider {
+    private final ExchangeService exchangeService;
 
-    private final SesClient ses;
-
-    OutlookEwsEmailSenderProvider(SesClient ses) {
-        this.ses = ses;
+    OutlookEwsEmailSenderProvider(ExchangeService exchangeService) {
+        this.exchangeService = exchangeService;
     }
 
     @Override
     public void send(Map<String, String> config, UserModel user, String subject, String textBody, String htmlBody) throws EmailException {
-
         String from = config.get("from");
         String fromDisplayName = config.get("fromDisplayName");
         String replyTo = config.get("replyTo");
@@ -41,28 +36,17 @@ public class OutlookEwsEmailSenderProvider implements EmailSenderProvider {
                 throw new Exception("Missing 'from' email address.");
             }
 
-            SendEmailRequest.Builder sendEmailRequest = SendEmailRequest.builder()
-                .destination(
-                    Destination.builder().toAddresses(user.getEmail()).build()
-                )
-                .message(Message.builder()
-                    .subject(Content.builder().charset(StandardCharsets.UTF_8.toString()).data(subject).build())
-                    .body(Body.builder()
-                        .html(Content.builder().charset(StandardCharsets.UTF_8.toString()).data(htmlBody).build())
-                        .text(Content.builder().charset(StandardCharsets.UTF_8.toString()).data(textBody).build())
-                        .build()
-                    )
-                    .build()
-                )
-                .source(toInternetAddress(from, fromDisplayName).toString());
+            EmailMessage message = new EmailMessage(exchangeService);
+            message.setSubject(subject);
+            message.setBody(MessageBody.getMessageBodyFromText(htmlBody));
+            message.getToRecipients().add(user.getEmail());
+            message.setFrom(new EmailAddress(from, fromDisplayName));
 
             if (replyTo != null && !replyTo.isEmpty()) {
-                sendEmailRequest.replyToAddresses(
-                    Collections.singletonList(toInternetAddress(replyTo, replyToDisplayName).toString()));
+                message.setReplyTo(Collections.singletonList(new EmailAddress(replyTo, replyToDisplayName)));
             }
 
-            ses.sendEmail(sendEmailRequest.build());
-
+            message.send();
         } catch (Exception e) {
             ServicesLogger.LOGGER.failedToSendEmail(e);
             throw new EmailException(e);
