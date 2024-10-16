@@ -14,34 +14,71 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-public class OutlookEwsEmailSenderProviderFactory implements EmailSenderProviderFactory, ServerInfoAwareProviderFactory {
+public class OutlookEwsEmailSenderProviderFactory
+        implements EmailSenderProviderFactory, ServerInfoAwareProviderFactory {
     private final Map<String, String> configMap = new HashMap<>();
     private String ewsUrl;
-    private String accessToken;
+    private String clientId;
+    private String clientSecret;
+    private String tenantId;
+    private ConfidentialClientApplication app;
+    private volatile String accessToken;
+    private volatile long tokenExpiryTime; // Epoch time in milliseconds
 
     @Override
     public EmailSenderProvider create(KeycloakSession session) {
-        return new OutlookEwsEmailSenderProvider(ewsUrl, accessToken);
+        return new OutlookEwsEmailSenderProvider(ewsUrl, () -> {
+            try {
+                return getAccessToken();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return accessToken;
+        });
     }
 
     @Override
     public void init(Config.Scope config) {
-        String clientId = config.get("clientId");
-        String clientSecret = config.get("clientSecret");
-        String tenantId = config.get("tenantId");
+        clientId = config.get("clientId");
+        clientSecret = config.get("clientSecret");
+        tenantId = config.get("tenantId");
         ewsUrl = config.get("ewsUrl");
 
         if (clientId != null && clientSecret != null && tenantId != null && ewsUrl != null) {
             configMap.put("ewsUrl", ewsUrl);
 
             try {
-                accessToken = getOAuthAccessToken(tenantId, clientId, clientSecret);
+                app = ConfidentialClientApplication.builder(
+                        clientId,
+                        ClientCredentialFactory.createFromSecret(clientSecret))
+                        .authority("https://login.microsoftonline.com/" + tenantId)
+                        .build();
+                acquireAccessToken();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to initialize OAuth token", e);
             }
         } else {
             throw new RuntimeException("Missing configuration for Office365 EWS");
         }
+    }
+
+    private synchronized void acquireAccessToken() throws Exception {
+        ClientCredentialParameters parameters = ClientCredentialParameters.builder(
+                Set.of("https://outlook.office365.com/.default"))
+                .build();
+
+        CompletableFuture<IAuthenticationResult> future = app.acquireToken(parameters);
+        IAuthenticationResult result = future.get();
+        this.accessToken = result.accessToken();
+        this.tokenExpiryTime = result.expiresOnDate().getTime() - 60000; // Refresh 1 minute before expiry
+    }
+
+    private String getAccessToken() throws Exception {
+        if (System.currentTimeMillis() > tokenExpiryTime) {
+            acquireAccessToken();
+        }
+        return accessToken;
     }
 
     @Override
@@ -60,20 +97,5 @@ public class OutlookEwsEmailSenderProviderFactory implements EmailSenderProvider
     @Override
     public Map<String, String> getOperationalInfo() {
         return configMap;
-    }
-
-    private static String getOAuthAccessToken(String tenantId, String clientId, String clientSecret) throws Exception {
-        ConfidentialClientApplication app = ConfidentialClientApplication.builder(
-                clientId,
-                ClientCredentialFactory.createFromSecret(clientSecret))
-                .authority("https://login.microsoftonline.com/" + tenantId)
-                .build();
-
-        ClientCredentialParameters parameters = ClientCredentialParameters.builder(
-                Set.of("https://outlook.office365.com/.default"))
-                .build();
-
-        CompletableFuture<IAuthenticationResult> future = app.acquireToken(parameters);
-        return future.get().accessToken();
     }
 }
